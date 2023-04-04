@@ -8,7 +8,7 @@ import seaborn as sns
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
-churn_data = pd.read_csv('/Users/yennamac/Downloads/train.csv')
+churn_data = pd.read_csv('https://github.com/SwasthikBangera/ChurnPrediction/blob/main/train.csv')
 
 # Check the dataset
 print(churn_data.head())
