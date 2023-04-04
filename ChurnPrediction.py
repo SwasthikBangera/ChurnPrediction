@@ -5,27 +5,28 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
 churn_data = pd.read_csv('/Users/yennamac/Downloads/train.csv')
 
 # Check the dataset
-#print(churn_data.head())
+print(churn_data.head())
 
 # Name of the features
-#print(churn_data.head(0))
+print(churn_data.head(0))
 
 # Alternatively use to name all columns in the list
 print(f"{churn_data.columns.tolist()}\n")
 
 
 # Number of empty/missing values
-#print(churn_data.isnull().sum())
+print(churn_data.isnull().sum())
 
 
 # Total number of values in the dataset
-#print(f"\nThe number of rows are: {churn_data.shape[0]}")
-#print(f"\nThe number of columns are: {churn_data.shape[1]}\n")
+print(f"\nThe number of rows are: {churn_data.shape[0]}")
+print(f"\nThe number of columns are: {churn_data.shape[1]}\n")
 
 # Convert categorical data to numerical 
 cat_features = churn_data[['state','voice_mail_plan','international_plan','area_code','churn']]
@@ -34,12 +35,8 @@ num_features = churn_data.drop(['state','voice_mail_plan','international_plan','
 print(cat_features.head())
 print(num_features.head())
 
-
-from sklearn import preprocessing
-
 le = preprocessing.LabelEncoder()
 churn_cat = cat_features.apply(le.fit_transform)
-churn_cat.head()
 
 churn_data = pd.merge(churn_cat, num_features,left_index=True, right_index=True)
 
@@ -64,8 +61,8 @@ churn_data = churn_data.replace({'area_code':{'area_code_415':0, 'area_code_408'
 print(churn_data.info())
 
 # Checking the data types of each variable
-#for var in churn_data.head(0):
-#    print((churn_data[var]).value_counts())
+for var in churn_data.head(0):
+    print((churn_data[var]).value_counts())
 
 # Statistical data of the parameters in data set
 print(churn_data.describe())
@@ -104,3 +101,81 @@ for i, col in enumerate(cols_plot2):
     sns.countplot(x ="churn", hue = str(col), data = churn_data)
     ax.set_title(f"{col}")
     
+''' Model Fitting '''
+
+# Seperate features and target
+
+X = churn_data.drop(['churn'],axis=1)
+y = churn_data['churn']
+
+# Seperate dataset into training and test data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,  random_state=42 )
+
+print(X.shape, X_train.shape, X_test.shape)
+print(y.shape, y_train.shape, y_test.shape)
+
+'''
+
+# Oversampling the dataset
+from imblearn.over_sampling import SMOTE
+
+oversample = SMOTE(k_neighbors=5)
+X_smote, y_smote = oversample.fit_resample(X_train, y_train)
+X_train, y_train = X_smote, y_smote
+
+'''
+
+# Building the Customer Churn Prediction Model
+from sklearn.ensemble import RandomForestClassifier
+
+rf = RandomForestClassifier(random_state=46)
+rf.fit(X_train,y_train)
+
+# Customer Churn Prediction Model Evaluation
+
+from sklearn.metrics import accuracy_score
+
+preds = rf.predict(X_test)
+print(f" The accuracy score is {accuracy_score(preds,y_test)}")
+
+''' Determine effect of daily_charge feature - Feature Engineering '''
+
+# Delete variable daily charge
+ 
+print(churn_data['daily_charge'])
+
+# Seperate features and target
+
+X_dc = X.drop(['daily_charge'],axis=1)
+y = churn_data['churn']
+
+# Seperate dataset into training and test data
+X_dc_train, X_dc_test, y_train, y_test = train_test_split(X_dc, y, test_size=0.2,  random_state=42 )
+
+print(X.shape, X_dc_train.shape, X_dc_test.shape)
+print(y.shape, y_train.shape, y_test.shape)
+
+'''
+
+# Oversampling the dataset
+from imblearn.over_sampling import SMOTE
+
+oversample = SMOTE(k_neighbors=5)
+X_smote, y_smote = oversample.fit_resample(X_train, y_train)
+X_train, y_train = X_smote, y_smote
+
+'''
+
+# Building the Customer Churn Prediction Model
+from sklearn.ensemble import RandomForestClassifier
+
+rf = RandomForestClassifier(random_state=46)
+rf.fit(X_dc_train,y_train)
+
+# Customer Churn Prediction Model Evaluation
+
+from sklearn.metrics import accuracy_score
+
+preds_dc = rf.predict(X_dc_test)
+print(f" The accuracy score with daily_charge is {accuracy_score(preds,y_test)} and without daily_charge is {accuracy_score(preds_dc,y_test)}")
+print("'Applied machine learning' is basically feature engineering. — Prof. Andrew Ng")
